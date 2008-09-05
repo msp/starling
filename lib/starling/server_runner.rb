@@ -1,6 +1,7 @@
 require File.join(File.dirname(__FILE__), 'server')
 require 'optparse'
 require 'yaml'
+require 'erb'
 
 module StarlingServer
   class Runner
@@ -17,11 +18,14 @@ module StarlingServer
     end
 
     def initialize
+      puts "##############################################"
+      puts "# WORDIA STARLING FORK                       #"
+      puts "##############################################"
       @@instance = self
       parse_options
 
       @process = ProcessHelper.new(options[:logger], options[:pid_file], options[:user], options[:group])
-
+       
       pid = @process.running?
       if pid
         STDERR.puts "There is already a Starling process running (pid #{pid}), exiting."
@@ -33,8 +37,8 @@ module StarlingServer
       start
     end
 
-    def load_config_file(filename)
-      YAML.load(File.open(filename))['starling'].each do |key, value|
+    def load_config_file(filename) 
+      YAML.load(ERB.new(IO.read(filename)).result)['starling'].each do |key, value|
         # alias some keys
         case key
         when "queue_path" then key = "path"
